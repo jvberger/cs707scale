@@ -1,0 +1,28 @@
+package wisc.madison.cs.cs707scale;
+
+import android.os.Bundle;
+import android.app.Activity;
+import android.view.Menu;
+import android.location.LocationManager;
+
+
+public class Scale extends Activity {
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.main);
+		LocationManager locationMan = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+		ScaleLocationListener locationLis = new ScaleLocationListener(this);
+		locationMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationLis);
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.scale, menu);
+		return true;
+	}
+	
+
+}
