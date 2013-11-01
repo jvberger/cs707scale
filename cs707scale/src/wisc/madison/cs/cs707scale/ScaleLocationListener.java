@@ -38,10 +38,11 @@ public class ScaleLocationListener implements LocationListener {
 	}
 	
 	public void onProviderEnabled(String provider) {
-		
+		display.setText("GPS is enabled");
 	} 
 	
 	public void onStatusChanged(String provider, int status, Bundle extras) {
+		display.setText(status);
 		if(status == 0) {
 			display.setText("Location is temporarily unavailable");
 		}
