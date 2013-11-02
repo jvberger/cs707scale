@@ -7,6 +7,7 @@ import android.view.Menu;
 import android.view.View;
 import android.location.LocationManager;
 
+
 public class Scale extends Activity {
 
 	@Override
@@ -29,6 +30,4 @@ public class Scale extends Activity {
 		Intent intent = new Intent(this, Map.class);
 		startActivity(intent);
 	}
-	
-
 }
