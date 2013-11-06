@@ -26,7 +26,12 @@ public class Scale extends Activity {
 		return true;
 	}
 	
-	public void ButtonClicked(View view) {
+	public void Button1Clicked(View view) {
+		Intent intent = new Intent(this, Popup.class);
+		startActivity(intent);
+	}
+	
+	public void Button2Clicked(View view) {
 		Intent intent = new Intent(this, Map.class);
 		startActivity(intent);
 	}
