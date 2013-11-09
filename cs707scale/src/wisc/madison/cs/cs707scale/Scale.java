@@ -28,6 +28,7 @@ public class Scale extends Activity {
 	
 	public void Button1Clicked(View view) {
 		Intent intent = new Intent(this, Popup.class);
+		intent.putExtra("text", "Sample Popup");
 		startActivity(intent);
 	}
 	
