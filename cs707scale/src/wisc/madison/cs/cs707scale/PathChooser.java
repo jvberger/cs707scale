@@ -28,9 +28,10 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 
-public class ScaleChooser extends Activity implements OnItemClickListener {
-	private ListView scales;
-	private ScaleChooser ref;
+public class PathChooser extends Activity implements OnItemClickListener {
+	private ListView paths;
+	private PathChooser ref;
+	private String scaleItem;
 	private String currentDirectory;
 	private static final String SETTINGSNAME = "ScaleSettings";
 	private HashMap<String,String> fileName = new HashMap<String,String>();
@@ -40,12 +41,14 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.chooser);
 		ref = this;
-		scales = (ListView) findViewById(R.id.listView1);
-		scales.setOnItemClickListener(this);
+		Intent intent = getIntent();
+		scaleItem = intent.getStringExtra("scaleItem");
+		paths = (ListView) findViewById(R.id.listView1);
+		paths.setOnItemClickListener(this);
 		SharedPreferences settings = getSharedPreferences(SETTINGSNAME, 0);
-		currentDirectory = settings.getString("scaleDirectory", "");
+		currentDirectory = settings.getString("pathDirectory", "");
 		if (currentDirectory != "") {
-			new LoadScalesTask().execute(currentDirectory);
+			new LoadPathsTask().execute(currentDirectory);
 		}
 	}
 
@@ -53,7 +56,7 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 		AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
 		alert.setTitle("Change Directory");
-		alert.setMessage("Input the location to search for scale files.");
+		alert.setMessage("Input the location to search for path files.");
 
 		// Set an EditText view to get user input
 		final EditText input = new EditText(this);
@@ -65,10 +68,10 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 				SharedPreferences settings = getSharedPreferences(SETTINGSNAME,
 						0);
 				SharedPreferences.Editor editor = settings.edit();
-				editor.putString("scaleDirectory", currentDirectory);
+				editor.putString("pathDirectory", currentDirectory);
 				editor.commit();
 
-				new LoadScalesTask().execute(currentDirectory);
+				new LoadPathsTask().execute(currentDirectory);
 			}
 		});
 
@@ -77,18 +80,18 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 		alert.show();
 	}
 
-	private class LoadScalesTask extends AsyncTask<String, Void, List<String>> {
+	private class LoadPathsTask extends AsyncTask<String, Void, List<String>> {
 
 		@Override
 		protected List<String> doInBackground(String... arg0) {
-			List<String> scaleList = new ArrayList<String>();
+			List<String> pathList = new ArrayList<String>();
 			fileName.clear();
 			try {
 				String path = arg0[0];
 				if (!path.endsWith("/")) {
 					path += "/";
 				}
-				path += "Scales.txt";
+				path += "Paths.txt";
 				BufferedReader in = new BufferedReader(new InputStreamReader(
 						new URL(path).openStream()));
 				String str;
@@ -98,20 +101,20 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 					{
 						String first = str.substring(0, split);
 						String second = str.substring(split+1);
-						scaleList.add(first);
+						pathList.add(first);
 						fileName.put(first, second);
 					}
 				}
 				in.close();
 			} catch (Exception e) {
 			}
-			return scaleList;
+			return pathList;
 		}
 
-		protected void onPostExecute(List<String> scaleList) {
+		protected void onPostExecute(List<String> pathList) {
 			ArrayAdapter<String> adapter = new ArrayAdapter<String>(ref,
-					android.R.layout.simple_list_item_1, scaleList);
-			scales.setAdapter(adapter);
+					android.R.layout.simple_list_item_1, pathList);
+			paths.setAdapter(adapter);
 		}
 	}
 
@@ -121,11 +124,11 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 		if (!path.endsWith("/")) {
 			path += "/";
 		}
-		path += fileName.get((String) scales.getItemAtPosition(arg2));
-		new LoadIndividualScaleTask().execute(path);
+		path += fileName.get((String) paths.getItemAtPosition(arg2));
+		new LoadIndividualPathTask().execute(path);
 	}
 
-	private class LoadIndividualScaleTask extends
+	private class LoadIndividualPathTask extends
 			AsyncTask<String, Void, String> {
 
 		@Override
@@ -144,21 +147,22 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 			return null;
 		}
 
-		protected void onPostExecute(String scaleItem) {
-			if (scaleItem != null) {
+		protected void onPostExecute(String pathItem) {
+			if (pathItem != null) {
 				try {
 					DocumentBuilder docBuilder = DocumentBuilderFactory
 							.newInstance().newDocumentBuilder();
-					Document doc = docBuilder.parse(new ByteArrayInputStream(scaleItem.getBytes()));
-					NodeList items = doc.getElementsByTagName("scaleItem");
-					if (items.getLength() == 0)
+					Document doc = docBuilder.parse(new ByteArrayInputStream(pathItem.getBytes()));
+					NodeList items = doc.getElementsByTagName("gx:coord");
+					if (items.getLength() < 2)
 					{
 						Intent intent = new Intent(ref, Popup.class);
-						intent.putExtra("text", "The requested scale does not contain any scale items.");
+						intent.putExtra("text", "The requested path does not contain enough coordinates.");
 						startActivity(intent);
 					}
 					else {
-						Intent intent = new Intent(ref, PathChooser.class);
+						Intent intent = new Intent(ref, Map.class);
+						intent.putExtra("pathItem", pathItem);
 						intent.putExtra("scaleItem", scaleItem);
 						startActivity(intent);
 					}
@@ -166,12 +170,12 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 				catch (Exception e)
 				{
 					Intent intent = new Intent(ref, Popup.class);
-					intent.putExtra("text", "The requested scale is not in the correct format.");
+					intent.putExtra("text", "The requested path is not in the correct format.");
 					startActivity(intent);
 				}
 			} else {
 				Intent intent = new Intent(ref, Popup.class);
-				intent.putExtra("text", "The requested scale does not exist.");
+				intent.putExtra("text", "The requested path does not exist.");
 				startActivity(intent);
 			}
 		}
