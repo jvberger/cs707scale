@@ -151,10 +151,10 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 							.newInstance().newDocumentBuilder();
 					Document doc = docBuilder.parse(new ByteArrayInputStream(scaleItem.getBytes()));
 					NodeList items = doc.getElementsByTagName("scaleItem");
-					if (items.getLength() == 0)
+					if (items.getLength() < 2)
 					{
 						Intent intent = new Intent(ref, Popup.class);
-						intent.putExtra("text", "The requested scale does not contain any scale items.");
+						intent.putExtra("text", "The requested scale does not contain enough scale items.");
 						startActivity(intent);
 					}
 					else {

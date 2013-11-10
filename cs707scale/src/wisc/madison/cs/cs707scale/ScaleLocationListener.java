@@ -18,7 +18,7 @@ public class ScaleLocationListener implements LocationListener {
 	
 	
 	public void onLocationChanged(Location loc) {
-		double dist = getDistance(loc.getLatitude(), loc.getLongitude());
+		double dist = MapUtils.getDistance(loc.getLatitude(), loc.getLongitude(), EDULAT, EDULON);
 		String Text = "My current location is:\n" + "Latitud = " + loc.getLatitude() + "\nLongitud = " + loc.getLongitude();
 		String Text2 = ("\nMy current distance from education (in meters)= " + dist);
 		
@@ -46,19 +46,4 @@ public class ScaleLocationListener implements LocationListener {
 			display.setText("Location is temporarily unavailable");
 		}
 	}
-	
-	private double getDistance(double lat, double lon) {
-		int radius = 6371000; //earth's radius in meters
-		double diffLat = Math.toRadians(EDULAT - lat);
-		double diffLon = Math.toRadians(EDULON - lon);
-		//haversine formula
-		double dist = 
-				Math.pow(Math.sin(diffLat / 2), 2) + 
-				Math.cos(Math.toRadians(EDULAT)) * 
-				Math.cos(Math.toRadians(lat)) * 
-				Math.pow(Math.sin(diffLon / 2), 2); 
-		dist =  radius * 2 * Math.atan2(Math.sqrt(dist), Math.sqrt(1-dist));
-		return dist;
-	}
-
 }
