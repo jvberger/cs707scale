@@ -1,6 +1,5 @@
 package wisc.madison.cs.cs707scale;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -54,7 +53,7 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 	        map.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
 	        map.animateCamera(CameraUpdateFactory.zoomTo(15));
         }
-        new DownloadPathTask().execute("http://pages.cs.wisc.edu/~jcall/sample.kml");
+        new DownloadPathTask().execute("http://pages.cs.wisc.edu/~jcall/samplePath.kml");
 
 	}
 
