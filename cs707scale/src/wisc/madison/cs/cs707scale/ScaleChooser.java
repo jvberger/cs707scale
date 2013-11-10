@@ -5,6 +5,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -32,6 +33,7 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 	private ScaleChooser ref;
 	private String currentDirectory;
 	private static final String SETTINGSNAME = "ScaleSettings";
+	private HashMap<String,String> fileName = new HashMap<String,String>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +82,7 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 		@Override
 		protected List<String> doInBackground(String... arg0) {
 			List<String> scaleList = new ArrayList<String>();
+			fileName.clear();
 			try {
 				String path = arg0[0];
 				if (!path.endsWith("/")) {
@@ -90,7 +93,14 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 						new URL(path).openStream()));
 				String str;
 				while ((str = in.readLine()) != null) {
-					scaleList.add(str);
+					int split = str.lastIndexOf('\t');
+					if (split != -1)
+					{
+						String first = str.substring(0, split);
+						String second = str.substring(split+1);
+						scaleList.add(first);
+						fileName.put(first, second);
+					}
 				}
 				in.close();
 			} catch (Exception e) {
@@ -111,8 +121,7 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 		if (!path.endsWith("/")) {
 			path += "/";
 		}
-		path += (String) scales.getItemAtPosition(arg2);
-		path += ".xml";
+		path += fileName.get((String) scales.getItemAtPosition(arg2));
 		new LoadIndividualScaleTask().execute(path);
 	}
 
