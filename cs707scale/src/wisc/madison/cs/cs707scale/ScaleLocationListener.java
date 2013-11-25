@@ -1,39 +1,47 @@
 package wisc.madison.cs.cs707scale;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import android.app.Activity;
+import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle; 
-import android.widget.TextView;
 
 public class ScaleLocationListener implements LocationListener {
-	
-	private final double EDULAT = 43.072041;
-	private final double EDULON = -89.403732; 
-	private TextView display;
+	private LatLng previousPoint;
+	private Map mapActivity;
 	
 	public ScaleLocationListener(Activity activity) {
-		display = (TextView)activity.findViewById(R.id.text);
+		mapActivity = (Map)activity;
 	}
 	
 	
 	public void onLocationChanged(Location loc) {
-		double dist = MapUtils.getDistance(loc.getLatitude(), loc.getLongitude(), EDULAT, EDULON);
-		String Text = "My current location is:\n" + "Latitud = " + loc.getLatitude() + "\nLongitud = " + loc.getLongitude();
-		String Text2 = ("\nMy current distance from education (in meters)= " + dist);
-		
-		String outText;
-		if(dist < 30) {
-			outText = "You are in education building. Distance from exact point is " + dist;
-		} else {
-			outText = (Text + Text2);
+		if (!mapActivity.pathStarted)
+		{
+			if (MapUtils.getDistance(loc.getLatitude(), loc.getLongitude(), mapActivity.startingPoint.latitude, mapActivity.startingPoint.longitude) < 30)
+			{
+				mapActivity.pathStarted = true;
+			}
 		}
-		 
-		display.setText(outText);
+		else
+		{
+			mapActivity.distanceTraveled += MapUtils.getDistance(loc.getLatitude(), loc.getLongitude(), previousPoint.latitude, previousPoint.longitude);
+			for (ScaleObject so : mapActivity.scaleItemList)
+			{
+				if (!so.opened && Math.abs(mapActivity.distanceTraveled - so.distance) < mapActivity.distanceInterval && MapUtils.getDistance(so.position.latitude, so.position.longitude, loc.getLatitude(), loc.getLongitude()) < 30) {
+					so.opened = true;
+					Intent intent = new Intent(mapActivity, Popup.class);
+					intent.putExtra("text", so.text);
+					mapActivity.startActivity(intent);
+				}
+			}
+		}
+		previousPoint = new LatLng(loc.getLatitude(), loc.getLongitude());
 	}
 	
 	public void onProviderDisabled(String provider) {
-		display.setText("GPS is disabled");
 	
 	}
 	
@@ -42,8 +50,6 @@ public class ScaleLocationListener implements LocationListener {
 	} 
 	
 	public void onStatusChanged(String provider, int status, Bundle extras) {
-		if(status == 0) {
-			display.setText("Location is temporarily unavailable");
-		}
+		
 	}
 }

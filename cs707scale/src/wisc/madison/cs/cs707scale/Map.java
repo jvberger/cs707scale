@@ -1,6 +1,9 @@
 package wisc.madison.cs.cs707scale;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,15 +26,22 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 
 public class Map extends FragmentActivity implements OnMarkerClickListener {
-	private List<ScaleObject> scaleItemList = new ArrayList<ScaleObject>();
+	public List<ScaleObject> scaleItemList = new ArrayList<ScaleObject>();
 	private GoogleMap map;
+	public LatLng startingPoint;
+	public boolean pathStarted = false;
+	public double distanceTraveled = 0;
+	public double distanceInterval;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -71,6 +81,8 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
                 points.add(point);
                 path.add(point);
             }
+            startingPoint = points.get(0);
+            distanceInterval = totalDist * 0.05;
             map.addPolyline(path);
 			Document docScale = docBuilder.parse(new ByteArrayInputStream(scaleItem.getBytes()));
             NodeList scaleItems = docScale.getElementsByTagName("scaleItem");
@@ -91,7 +103,8 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
             			so.percentage = Double.parseDouble(child.getTextContent());
             		}
             		else if (nodeName.equals("picture")) {
-            			so.image = child.getTextContent();
+            			so.imageLocation = child.getTextContent();
+            			new LoadImageTask().execute(so);
             		}
             	}
             	if (so.name == null || so.text == null || so.percentage == null)
@@ -110,6 +123,7 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
             	else
             	{
             		double dist = so.percentage * totalDist;
+            		so.distance = dist;
             		double cummDist = 0;
             		int step = 0;
             		while (step < steps.size() && cummDist + steps.get(step) < dist)
@@ -122,11 +136,13 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
             			double percentageOfStep = (dist - cummDist)/steps.get(step);
             			double lat = points.get(step).latitude + (points.get(step+1).latitude - points.get(step).latitude)*percentageOfStep;
             			double lon = points.get(step).longitude + (points.get(step+1).longitude - points.get(step).longitude)*percentageOfStep;
-            			so.marker = map.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(so.name));
+            			so.position = new LatLng(lat, lon);
+            			so.marker = map.addMarker(new MarkerOptions().position(so.position).title(so.name));
             		}
             		else
             		{
             			so.marker = map.addMarker(new MarkerOptions().position(points.get(i)).title(so.name));
+            			so.position = points.get(i);
             		}
             		scaleItemList.add(so);
             	}
@@ -143,8 +159,8 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 	        map.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
 	        map.animateCamera(CameraUpdateFactory.zoomTo(15));
         }
-        //new DownloadPathTask().execute("http://pages.cs.wisc.edu/~jcall/samplePath.kml");
-
+		ScaleLocationListener locationLis = new ScaleLocationListener(this);
+		locationMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 2, locationLis);
 	}
 
 	@Override
@@ -153,12 +169,35 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 		{
 			if (marker.equals(so.marker))
 			{
-				Intent intent = new Intent(this, Popup.class);
-				intent.putExtra("text", so.text);
-				startActivity(intent);
+				if (distanceTraveled - so.distance < distanceInterval)
+				{
+					Intent intent = new Intent(this, Popup.class);
+					intent.putExtra("text", so.text);
+					startActivity(intent);
+					return true;
+				}
 				break;
 			}
 		}
-		return true;
+		return false;
 	}
+	
+	private class LoadImageTask extends
+		AsyncTask<ScaleObject, Void, String> {
+	
+	@Override
+	protected String doInBackground(ScaleObject... arg0) {
+		try {
+			URL url = new URL(arg0[0].imageLocation);
+	        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+	        connection.setDoInput(true);
+	        connection.connect();
+	        InputStream input = connection.getInputStream();
+	        Bitmap myBitmap = BitmapFactory.decodeStream(input);
+	        arg0[0].image = myBitmap;
+		} catch (Exception e) {
+		}
+		return "";
+	}
+}
 }

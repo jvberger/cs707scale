@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.view.Menu;
 import android.view.View;
-import android.location.LocationManager;
 
 
 public class Scale extends Activity {
@@ -14,9 +13,6 @@ public class Scale extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		LocationManager locationMan = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-		ScaleLocationListener locationLis = new ScaleLocationListener(this);
-		locationMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationLis);
 	}
 
 	@Override
