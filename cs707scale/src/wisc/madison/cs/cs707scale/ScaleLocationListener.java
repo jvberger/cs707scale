@@ -23,6 +23,9 @@ public class ScaleLocationListener implements LocationListener {
 			if (MapUtils.getDistance(loc.getLatitude(), loc.getLongitude(), mapActivity.startingPoint.latitude, mapActivity.startingPoint.longitude) < 30)
 			{
 				mapActivity.pathStarted = true;
+				Intent intent = new Intent(mapActivity, Popup.class);
+				intent.putExtra("text", "started");
+				mapActivity.startActivity(intent);
 			}
 		}
 		else
@@ -33,6 +36,8 @@ public class ScaleLocationListener implements LocationListener {
 				if (!so.opened && Math.abs(mapActivity.distanceTraveled - so.distance) < mapActivity.distanceInterval && MapUtils.getDistance(so.position.latitude, so.position.longitude, loc.getLatitude(), loc.getLongitude()) < 30) {
 					so.opened = true;
 					Intent intent = new Intent(mapActivity, Popup.class);
+					intent.putExtra("title", so.name);
+					intent.putExtra("image", so.image);
 					intent.putExtra("text", so.text);
 					mapActivity.startActivity(intent);
 				}

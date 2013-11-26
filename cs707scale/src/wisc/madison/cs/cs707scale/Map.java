@@ -1,8 +1,8 @@
 package wisc.madison.cs.cs707scale;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -169,9 +169,11 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 		{
 			if (marker.equals(so.marker))
 			{
-				if (distanceTraveled - so.distance < distanceInterval)
+				if (so.distance - distanceTraveled < distanceInterval)
 				{
 					Intent intent = new Intent(this, Popup.class);
+					intent.putExtra("title", so.name);
+					intent.putExtra("image", so.image);
 					intent.putExtra("text", so.text);
 					startActivity(intent);
 					return true;
@@ -189,11 +191,15 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 	protected String doInBackground(ScaleObject... arg0) {
 		try {
 			URL url = new URL(arg0[0].imageLocation);
-	        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-	        connection.setDoInput(true);
-	        connection.connect();
-	        InputStream input = connection.getInputStream();
-	        Bitmap myBitmap = BitmapFactory.decodeStream(input);
+			InputStream in = url.openStream();
+			BufferedInputStream buf = new BufferedInputStream(in);
+	        Bitmap myBitmap = BitmapFactory.decodeStream(buf);
+            if (in != null) {
+                in.close();
+            }
+            if (buf != null) {
+                buf.close();
+            }
 	        arg0[0].image = myBitmap;
 		} catch (Exception e) {
 		}
