@@ -8,7 +8,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle; 
 
-public class ScaleLocationListener implements LocationListener {
+public class ScaleLocationListener extends Activity implements LocationListener {
 	private LatLng previousPoint;
 	private Map mapActivity;
 	
@@ -16,7 +16,7 @@ public class ScaleLocationListener implements LocationListener {
 		mapActivity = (Map)activity;
 	}
 	
-	
+	@Override
 	public void onLocationChanged(Location loc) {
 		if (!mapActivity.pathStarted)
 		{
@@ -46,15 +46,27 @@ public class ScaleLocationListener implements LocationListener {
 		previousPoint = new LatLng(loc.getLatitude(), loc.getLongitude());
 	}
 	
+	@Override
 	public void onProviderDisabled(String provider) {
-	
 	}
 	
+	@Override
 	public void onProviderEnabled(String provider) {
 		
 	} 
 	
+	@Override
 	public void onStatusChanged(String provider, int status, Bundle extras) {
-		
+
+	}
+	
+	@Override
+	public void onPause(){
+	    super.onPause();
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
 	}
 }

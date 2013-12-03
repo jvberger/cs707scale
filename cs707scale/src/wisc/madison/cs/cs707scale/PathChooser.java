@@ -28,6 +28,8 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 
+
+
 public class PathChooser extends Activity implements OnItemClickListener {
 	private ListView paths;
 	private PathChooser ref;
@@ -60,6 +62,7 @@ public class PathChooser extends Activity implements OnItemClickListener {
 
 		// Set an EditText view to get user input
 		final EditText input = new EditText(this);
+		input.setText("http://pages.cs.wisc.edu/~jcall");
 		alert.setView(input);
 
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -80,7 +83,7 @@ public class PathChooser extends Activity implements OnItemClickListener {
 		alert.show();
 	}
 
-	private class LoadPathsTask extends AsyncTask<String, Void, List<String>> {
+	public class LoadPathsTask extends AsyncTask<String, Void, List<String>> {
 
 		@Override
 		protected List<String> doInBackground(String... arg0) {
@@ -179,5 +182,6 @@ public class PathChooser extends Activity implements OnItemClickListener {
 				startActivity(intent);
 			}
 		}
+		
 	}
 }

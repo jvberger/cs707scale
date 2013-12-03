@@ -22,6 +22,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.CameraUpdate;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -34,6 +36,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.view.MenuItem;
+import android.util.DisplayMetrics;
+
+import android.view.Menu;
+
+
 
 public class Map extends FragmentActivity implements OnMarkerClickListener {
 	public List<ScaleObject> scaleItemList = new ArrayList<ScaleObject>();
@@ -42,17 +50,27 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 	public boolean pathStarted = false;
 	public double distanceTraveled = 0;
 	public double distanceInterval;
+	public Intent intent;
+	public String pathItem, scaleItem;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map);
-		Intent intent = getIntent();
-		String pathItem = intent.getStringExtra("pathItem");
-		String scaleItem = intent.getStringExtra("scaleItem");
+		intent = getIntent();
+		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		pathItem = intent.getStringExtra("pathItem");
+		scaleItem = intent.getStringExtra("scaleItem");
+		populate();
+	}
+	
+	private void populate() {
+
 		Fragment f = getSupportFragmentManager().findFragmentById(R.id.map);
 		SupportMapFragment mf = (SupportMapFragment)f;
         map = mf.getMap();
         map.setMyLocationEnabled(true);
+        
         try {
 			DocumentBuilder docBuilder = DocumentBuilderFactory
 					.newInstance().newDocumentBuilder();
@@ -146,21 +164,34 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
             		}
             		scaleItemList.add(so);
             	}
+            	
             }
         }
         catch (Exception e) {
         	System.out.print(e.toString());
         }
+        
+        LatLngBounds.Builder calcBounds = new LatLngBounds.Builder();
+        for (ScaleObject so : scaleItemList) {
+        	calcBounds.include(new LatLng(so.marker.getPosition().latitude, so.marker.getPosition().longitude));  
+        }
+     
         map.setOnMarkerClickListener(this);
         LocationManager locationMan = (LocationManager) this.getSystemService(LOCATION_SERVICE);
         Location location = locationMan.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        if (location != null)
-        {
-	        map.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
-	        map.animateCamera(CameraUpdateFactory.zoomTo(15));
-        }
+        calcBounds.include(new LatLng(location.getLatitude(), location.getLongitude()));
+        
+        DisplayMetrics displaymetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+        int height = displaymetrics.heightPixels;
+        int width = displaymetrics.widthPixels;
+        CameraUpdate camUpdate = CameraUpdateFactory.newLatLngBounds(calcBounds.build(), width, height, 30);
+		map.moveCamera(camUpdate);
+       
 		ScaleLocationListener locationLis = new ScaleLocationListener(this);
 		locationMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 2, locationLis);
+		
+
 	}
 
 	@Override
@@ -206,4 +237,30 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 		return "";
 	}
 }
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+		menu.add(0, 1, 1, "New Directory");
+		menu.add(0, 2, 2, "New Path");
+		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		Intent newIntent;
+		switch (item.getItemId()) {
+		case 1 :
+			getIntent().removeExtra("pathItem"); 
+			getIntent().removeExtra("scaleItem"); 
+			newIntent = new Intent(this, ScaleChooser.class);
+			startActivity(newIntent);
+			return true;
+		case 2 :
+			finish();
+			return true;
+		}
+		return true;
+	}
+	
 }

@@ -1,10 +1,14 @@
 package wisc.madison.cs.cs707scale;
 
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 
 public class Scale extends Activity {
@@ -15,10 +19,11 @@ public class Scale extends Activity {
 		setContentView(R.layout.main);
 	}
 
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.scale, menu);
+		getMenuInflater().inflate(R.menu.settings, menu);
 		return true;
 	}
 	
@@ -32,4 +37,6 @@ public class Scale extends Activity {
 		Intent intent = new Intent(this, ScaleChooser.class);
 		startActivity(intent);
 	}
+	
+
 }
