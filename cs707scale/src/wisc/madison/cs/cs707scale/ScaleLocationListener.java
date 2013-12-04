@@ -60,13 +60,4 @@ public class ScaleLocationListener extends Activity implements LocationListener 
 
 	}
 	
-	@Override
-	public void onPause(){
-	    super.onPause();
-	}
-	
-	@Override
-	public void onResume() {
-		super.onResume();
-	}
 }

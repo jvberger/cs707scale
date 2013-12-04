@@ -28,8 +28,6 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 
-
-
 public class PathChooser extends Activity implements OnItemClickListener {
 	private ListView paths;
 	private PathChooser ref;

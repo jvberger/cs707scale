@@ -41,8 +41,6 @@ import android.util.DisplayMetrics;
 
 import android.view.Menu;
 
-
-
 public class Map extends FragmentActivity implements OnMarkerClickListener {
 	public List<ScaleObject> scaleItemList = new ArrayList<ScaleObject>();
 	private GoogleMap map;
@@ -51,7 +49,9 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 	public double distanceTraveled = 0;
 	public double distanceInterval;
 	public Intent intent;
-	public String pathItem, scaleItem;
+	private String pathItem, scaleItem;
+	private ScaleLocationListener locationLis;
+	private LocationManager locationMan;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -177,7 +177,7 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
         }
      
         map.setOnMarkerClickListener(this);
-        LocationManager locationMan = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+        locationMan = (LocationManager) this.getSystemService(LOCATION_SERVICE);
         Location location = locationMan.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         calcBounds.include(new LatLng(location.getLatitude(), location.getLongitude()));
         
@@ -188,7 +188,7 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
         CameraUpdate camUpdate = CameraUpdateFactory.newLatLngBounds(calcBounds.build(), width, height, 30);
 		map.moveCamera(camUpdate);
        
-		ScaleLocationListener locationLis = new ScaleLocationListener(this);
+		locationLis = new ScaleLocationListener(this);
 		locationMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 2, locationLis);
 		
 
@@ -261,6 +261,20 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 			return true;
 		}
 		return true;
+	}
+	
+	@Override
+	protected void onPause(){
+		locationMan.removeUpdates(locationLis);
+		locationLis = null;
+	    super.onPause();
+	} 
+	
+	@Override
+	protected void onResume() {
+		locationLis = new ScaleLocationListener(this);
+		locationMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 2, locationLis);
+	    super.onResume();
 	}
 	
 }
