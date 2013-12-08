@@ -57,7 +57,7 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 
 		// Set an EditText view to get user input
 		final EditText input = new EditText(this);
-		input.setText("http://cs.wisc.edu/~jcall");
+		input.setText(currentDirectory);
 		alert.setView(input);
 
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {

@@ -58,7 +58,6 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map);
 		intent = getIntent();
-		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		pathItem = intent.getStringExtra("pathItem");
 		scaleItem = intent.getStringExtra("scaleItem");
 		populate();
@@ -179,7 +178,9 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
         map.setOnMarkerClickListener(this);
         locationMan = (LocationManager) this.getSystemService(LOCATION_SERVICE);
         Location location = locationMan.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        calcBounds.include(new LatLng(location.getLatitude(), location.getLongitude()));
+        if (location != null) {
+        	calcBounds.include(new LatLng(location.getLatitude(), location.getLongitude()));
+        }
         
         DisplayMetrics displaymetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
@@ -254,6 +255,7 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 			getIntent().removeExtra("pathItem"); 
 			getIntent().removeExtra("scaleItem"); 
 			newIntent = new Intent(this, ScaleChooser.class);
+			newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(newIntent);
 			return true;
 		case 2 :
