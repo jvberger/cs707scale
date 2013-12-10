@@ -1,18 +1,11 @@
 package wisc.madison.cs.cs707scale;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -126,60 +119,9 @@ public class PathChooser extends Activity implements OnItemClickListener {
 			path += "/";
 		}
 		path += fileName.get((String) paths.getItemAtPosition(arg2));
-		new LoadIndividualPathTask().execute(path);
-	}
-
-	private class LoadIndividualPathTask extends
-			AsyncTask<String, Void, String> {
-
-		@Override
-		protected String doInBackground(String... arg0) {
-			try {
-				BufferedReader in = new BufferedReader(new InputStreamReader(
-						new URL(arg0[0]).openStream()));
-				String str;
-				String fullFile = "";
-				while ((str = in.readLine()) != null) {
-					fullFile += str + "\n";
-				}
-				return fullFile;
-			} catch (Exception e) {
-			}
-			return null;
-		}
-
-		protected void onPostExecute(String pathItem) {
-			if (pathItem != null) {
-				try {
-					DocumentBuilder docBuilder = DocumentBuilderFactory
-							.newInstance().newDocumentBuilder();
-					Document doc = docBuilder.parse(new ByteArrayInputStream(pathItem.getBytes()));
-					NodeList items = doc.getElementsByTagName("gx:coord");
-					if (items.getLength() < 2)
-					{
-						Intent intent = new Intent(ref, Popup.class);
-						intent.putExtra("text", "The requested path does not contain enough coordinates.");
-						startActivity(intent);
-					}
-					else {
-						Intent intent = new Intent(ref, Map.class);
-						intent.putExtra("pathItem", pathItem);
-						intent.putExtra("scaleItem", scaleItem);
-						startActivity(intent);
-					}
-				}
-				catch (Exception e)
-				{
-					Intent intent = new Intent(ref, Popup.class);
-					intent.putExtra("text", "The requested path is not in the correct format.");
-					startActivity(intent);
-				}
-			} else {
-				Intent intent = new Intent(ref, Popup.class);
-				intent.putExtra("text", "The requested path does not exist.");
-				startActivity(intent);
-			}
-		}
-		
+		Intent intent = new Intent(ref, Map.class);
+		intent.putExtra("path", path);
+		intent.putExtra("scaleItem", scaleItem);
+		startActivity(intent);
 	}
 }

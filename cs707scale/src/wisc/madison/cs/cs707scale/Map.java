@@ -1,8 +1,10 @@
 package wisc.madison.cs.cs707scale;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,8 +50,9 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 	public boolean pathStarted = false;
 	public double distanceTraveled = 0;
 	public double distanceInterval;
+	private Map ref;
 	public Intent intent;
-	private String pathItem, scaleItem;
+	private String pathUrl, scaleItem;
 	private ScaleLocationListener locationLis;
 	private LocationManager locationMan;
 	
@@ -57,25 +60,27 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map);
+		ref = this;
 		intent = getIntent();
-		pathItem = intent.getStringExtra("pathItem");
+		pathUrl = intent.getStringExtra("path");
 		scaleItem = intent.getStringExtra("scaleItem");
-		populate();
-	}
-	
-	private void populate() {
-
+		
 		Fragment f = getSupportFragmentManager().findFragmentById(R.id.map);
 		SupportMapFragment mf = (SupportMapFragment)f;
         map = mf.getMap();
         map.setMyLocationEnabled(true);
-        
+        map.setOnMarkerClickListener(this);
+        locationMan = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+		locationLis = new ScaleLocationListener(this);
+		locationMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 2, locationLis);
+		new LoadIndividualPathTask().execute(pathUrl);
+		//populate();
+	}
+	
+	private void populate(NodeList coordinates) {
+        double maxLat = -90, maxLng = -180, minLat = 90, minLng = 180;
         try {
-			DocumentBuilder docBuilder = DocumentBuilderFactory
-					.newInstance().newDocumentBuilder();
-			Document docPath = docBuilder.parse(new ByteArrayInputStream(pathItem.getBytes()));
         	PolylineOptions path = new PolylineOptions();
-            NodeList coordinates = docPath.getElementsByTagName("gx:coord");
         	List<Double> steps = new ArrayList<Double>();
         	List<LatLng> points = new ArrayList<LatLng>();
             double prevLat = 0;
@@ -95,12 +100,18 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
             	prevLat = currLat;
             	prevLon = currLon;
                 LatLng point = new LatLng(currLat, currLon);
+            	if (currLat > maxLat) { maxLat = currLat; }
+            	if (currLat < minLat) { minLat = currLat; }
+            	if (currLon > maxLng) { maxLng = currLon; }
+            	if (currLon < minLng) { minLng = currLon; }
                 points.add(point);
                 path.add(point);
             }
             startingPoint = points.get(0);
             distanceInterval = totalDist * 0.05;
             map.addPolyline(path);
+            DocumentBuilder docBuilder = DocumentBuilderFactory
+                    .newInstance().newDocumentBuilder();
 			Document docScale = docBuilder.parse(new ByteArrayInputStream(scaleItem.getBytes()));
             NodeList scaleItems = docScale.getElementsByTagName("scaleItem");
             for (int i = 0; i < scaleItems.getLength(); i++) {
@@ -170,29 +181,27 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
         	System.out.print(e.toString());
         }
         
-        LatLngBounds.Builder calcBounds = new LatLngBounds.Builder();
-        for (ScaleObject so : scaleItemList) {
-        	calcBounds.include(new LatLng(so.marker.getPosition().latitude, so.marker.getPosition().longitude));  
-        }
-     
-        map.setOnMarkerClickListener(this);
-        locationMan = (LocationManager) this.getSystemService(LOCATION_SERVICE);
         Location location = locationMan.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if (location != null) {
-        	calcBounds.include(new LatLng(location.getLatitude(), location.getLongitude()));
+        	if (location.getLatitude() > maxLat) { maxLat = location.getLatitude(); }
+        	if (location.getLatitude() < minLat) { minLat = location.getLatitude(); }
+        	if (location.getLongitude() > maxLng) { maxLng = location.getLongitude(); }
+        	if (location.getLongitude() < minLng) { minLng = location.getLongitude(); }
         }
+        double latRange = maxLat - minLat, lngRange = maxLng - minLng;
+        maxLat += latRange*0.05;
+        minLat -= latRange*0.05;
+        maxLng += lngRange*0.05;
+        minLng -= lngRange*0.05;
+        
+        LatLngBounds calcBounds = new LatLngBounds(new LatLng(minLat, minLng), new LatLng(maxLat, maxLng));
         
         DisplayMetrics displaymetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         int height = displaymetrics.heightPixels;
         int width = displaymetrics.widthPixels;
-        CameraUpdate camUpdate = CameraUpdateFactory.newLatLngBounds(calcBounds.build(), width, height, 30);
+        CameraUpdate camUpdate = CameraUpdateFactory.newLatLngBounds(calcBounds, width, height, 30);
 		map.moveCamera(camUpdate);
-       
-		locationLis = new ScaleLocationListener(this);
-		locationMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 2, locationLis);
-		
-
 	}
 
 	@Override
@@ -242,7 +251,7 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
-		menu.add(0, 1, 1, "New Directory");
+		menu.add(0, 1, 1, "New Scale");
 		menu.add(0, 2, 2, "New Path");
 		return true;
 	}
@@ -277,6 +286,66 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 		locationLis = new ScaleLocationListener(this);
 		locationMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 2, locationLis);
 	    super.onResume();
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		finish();
+	}
+	
+
+	private class LoadIndividualPathTask extends
+			AsyncTask<String, Void, String> {
+
+		@Override
+		protected String doInBackground(String... arg0) {
+			try {
+				BufferedReader in = new BufferedReader(new InputStreamReader(
+						new URL(arg0[0]).openStream()));
+				String str;
+				String fullFile = "";
+				while ((str = in.readLine()) != null) {
+					fullFile += str + "\n";
+				}
+				return fullFile;
+			} catch (Exception e) {
+			}
+			return null;
+		}
+
+		protected void onPostExecute(String pathItem) {
+			if (pathItem != null) {
+				try {
+					DocumentBuilder docBuilder = DocumentBuilderFactory
+							.newInstance().newDocumentBuilder();
+					Document doc = docBuilder.parse(new ByteArrayInputStream(pathItem.getBytes()));
+					NodeList items = doc.getElementsByTagName("gx:coord");
+					if (items.getLength() < 2)
+					{
+						items = doc.getElementsByTagName("coordinates");
+					}
+					if (items.getLength() < 2)
+					{
+						Intent intent = new Intent(ref, Popup.class);
+						intent.putExtra("text", "The requested path does not contain enough coordinates.");
+						ref.startActivityForResult(intent, 0);
+					}
+					else {
+						ref.populate(items);
+					}
+				}
+				catch (Exception e)
+				{
+					Intent intent = new Intent(ref, Popup.class);
+					intent.putExtra("text", "The requested path is not in the correct format.");
+					ref.startActivityForResult(intent, 0);
+				}
+			} else {
+				Intent intent = new Intent(ref, Popup.class);
+				intent.putExtra("text", "The requested path does not exist.");
+				ref.startActivityForResult(intent, 0);
+			}
+		}
 	}
 	
 }
