@@ -76,10 +76,9 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 		locationLis = new ScaleLocationListener(this);
 		locationMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 2, locationLis);
 		new LoadIndividualPathTask().execute(pathUrl);
-		//populate();
 	}
 	
-	private void populate(NodeList coordinates) {
+	private void populate(List<String> coordinates) {
         double maxLat = -90, maxLng = -180, minLat = 90, minLng = 180;
         try {
         	PolylineOptions path = new PolylineOptions();
@@ -88,9 +87,9 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
             double prevLat = 0;
             double prevLon = 0;
             double totalDist = 0;
-            for (int i = 0; i < coordinates.getLength(); i++) {
-                String coordText = coordinates.item(i).getFirstChild().getNodeValue().trim();
-                String[] coordinate = coordText.split(" ");
+            for (int i = 0; i < coordinates.size(); i++) {
+                String coordText = coordinates.get(i);
+                String[] coordinate = coordText.split(",");
                 double currLat = Double.parseDouble(coordinate[1]);
                 double currLon = Double.parseDouble(coordinate[0]);
                 if (prevLat != 0 && prevLon != 0)
@@ -329,16 +328,34 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 					if (items.getLength() < 2)
 					{
 						items = doc.getElementsByTagName("coordinates");
-					}
-					if (items.getLength() < 2)
-					{
+						for (int i = 0; i < items.getLength(); i++)
+						{
+							if (items.item(i).getFirstChild()!= null && items.item(i).getFirstChild().getNodeValue().trim().contains("\n"))
+							{
+								String content = items.item(i).getFirstChild().getNodeValue().trim();
+								List<String> coordinates = new ArrayList<String>();
+								while (content.contains("\n"))
+								{
+									coordinates.add(content.substring(0, content.indexOf('\n')).trim());
+									content = content.substring(content.indexOf('\n')+1);
+								}
+								coordinates.add(content);
+								ref.populate(coordinates);
+								return;
+							}
+						}
 						Intent intent = new Intent(ref, Popup.class);
 						intent.putExtra("title", "Error");
-						intent.putExtra("text", "The requested path does not contain enough coordinates.");
+						intent.putExtra("text", "The path file does not contain a path.");
 						ref.startActivityForResult(intent, 0);
 					}
 					else {
-						ref.populate(items);
+						List<String> coordinates = new ArrayList<String>();
+						for (int i =0; i < items.getLength(); i++)
+						{
+							coordinates.add(items.item(i).getTextContent().replace(" ",","));
+						}
+						ref.populate(coordinates);
 					}
 				}
 				catch (Exception e)
