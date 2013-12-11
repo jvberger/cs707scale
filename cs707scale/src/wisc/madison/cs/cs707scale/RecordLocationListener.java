@@ -20,7 +20,7 @@ public class RecordLocationListener extends Activity implements LocationListener
 		LatLng currentPoint = new LatLng(loc.getLatitude(), loc.getLongitude());
 		if (isRecording)
 		{
-			coordinates += "\n"+currentPoint.latitude + " "+ currentPoint.longitude +" 0";
+			coordinates += "\n"+currentPoint.longitude + ","+ currentPoint.latitude +",0";
 			recordActivity.addEdge(previousPoint, currentPoint);
 		}
 		previousPoint = currentPoint;
@@ -42,7 +42,7 @@ public class RecordLocationListener extends Activity implements LocationListener
 	
 	public void StartRecording(){
 		if (previousPoint != null) {
-			coordinates += "\n"+previousPoint.latitude + " "+ previousPoint.longitude +" 0";
+			coordinates += "\n"+previousPoint.longitude + ","+ previousPoint.latitude +",0";
 		}
 		isRecording = true;
 	}

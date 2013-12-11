@@ -20,6 +20,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
@@ -31,31 +32,56 @@ public class PathChooser extends Activity implements OnItemClickListener {
 	private static final String SETTINGSNAME = "ScaleSettings";
 	private HashMap<String,String> fileName = new HashMap<String,String>();
 	private boolean local;
+	private ListView list;
+	private Button changeDirectory, localButton;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.chooser);
+		list = (ListView)findViewById(R.id.listView1);
+		localButton = (Button)findViewById(R.id.local_btn);
+		changeDirectory = (Button)findViewById(R.id.changeDirectory_btn);
+		changeDirectory.setVisibility(View.GONE);
+		localButton.setVisibility(View.VISIBLE);
+		local = true;
 		ref = this;
 		Intent intent = getIntent();
 		scaleItem = intent.getStringExtra("scaleItem");
 		paths = (ListView) findViewById(R.id.listView1);
 		paths.setOnItemClickListener(this);
-		SharedPreferences settings = getSharedPreferences(SETTINGSNAME, 0);
-		currentDirectory = settings.getString("pathDirectory", "");
-		if (currentDirectory != "") {
-			new LoadPathsTask().execute(currentDirectory);
+		LoadLocalPath();
+	}
+	
+	public void ChangeLocalClicked(View view)
+	{
+		local = !local;
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(ref,
+				android.R.layout.simple_list_item_1, new ArrayList<String>());
+		fileName.clear();
+		paths.setAdapter(adapter);
+		if (local)
+		{
+			changeDirectory.setVisibility(View.GONE);
+			localButton.setVisibility(View.VISIBLE);
+			localButton.setText("Change To Online Paths");
+			LoadLocalPath();
 		}
 		else
-		{
-			LoadLocalPath();
+		{			
+			changeDirectory.setVisibility(View.VISIBLE);
+			localButton.setText("Change To Local Paths");
+			SharedPreferences settings = getSharedPreferences(SETTINGSNAME, 0);
+			currentDirectory = settings.getString("pathDirectory", "");
+			if (currentDirectory != "") {
+				new LoadPathsTask().execute(currentDirectory);
+			}
 		}
 	}
 	
 	private void LoadLocalPath()
 	{
 		try {
-			local = true;
 			List<String> pathList = new ArrayList<String>();
 			String str;
 			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(new File(ref.getFilesDir(), "Paths.txt"))));
@@ -145,7 +171,6 @@ public class PathChooser extends Activity implements OnItemClickListener {
 		}
 
 		protected void onPostExecute(List<String> pathList) {
-			local = false;
 			ArrayAdapter<String> adapter = new ArrayAdapter<String>(ref,
 					android.R.layout.simple_list_item_1, pathList);
 			paths.setAdapter(adapter);
