@@ -24,7 +24,8 @@ public class ScaleLocationListener extends Activity implements LocationListener 
 			{
 				mapActivity.pathStarted = true;
 				Intent intent = new Intent(mapActivity, Popup.class);
-				intent.putExtra("text", "started");
+				intent.putExtra("title", "Path started");
+				intent.putExtra("text", "You have reached the paths starting point. Continue along the path to explore your chosen scale.");
 				mapActivity.startActivity(intent);
 			}
 		}

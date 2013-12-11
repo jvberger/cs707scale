@@ -155,6 +155,7 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 					if (items.getLength() < 2)
 					{
 						Intent intent = new Intent(ref, Popup.class);
+						intent.putExtra("title", "Error");
 						intent.putExtra("text", "The requested scale does not contain enough scale items.");
 						startActivity(intent);
 					}
@@ -167,11 +168,13 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 				catch (Exception e)
 				{
 					Intent intent = new Intent(ref, Popup.class);
+					intent.putExtra("title", "Error");
 					intent.putExtra("text", "The requested scale is not in the correct format.");
 					startActivity(intent);
 				}
 			} else {
 				Intent intent = new Intent(ref, Popup.class);
+				intent.putExtra("title", "Error");
 				intent.putExtra("text", "The requested scale does not exist.");
 				startActivity(intent);
 			}

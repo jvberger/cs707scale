@@ -20,6 +20,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -108,6 +110,10 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
                 path.add(point);
             }
             startingPoint = points.get(0);
+            BitmapDescriptor bitmapDescriptor 
+            = BitmapDescriptorFactory.defaultMarker(
+              BitmapDescriptorFactory.HUE_GREEN);
+            map.addMarker(new MarkerOptions().position(startingPoint).title("Starting Point").icon(bitmapDescriptor));
             distanceInterval = totalDist * 0.05;
             map.addPolyline(path);
             DocumentBuilder docBuilder = DocumentBuilderFactory
@@ -327,6 +333,7 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 					if (items.getLength() < 2)
 					{
 						Intent intent = new Intent(ref, Popup.class);
+						intent.putExtra("title", "Error");
 						intent.putExtra("text", "The requested path does not contain enough coordinates.");
 						ref.startActivityForResult(intent, 0);
 					}
@@ -337,11 +344,13 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 				catch (Exception e)
 				{
 					Intent intent = new Intent(ref, Popup.class);
+					intent.putExtra("title", "Error");
 					intent.putExtra("text", "The requested path is not in the correct format.");
 					ref.startActivityForResult(intent, 0);
 				}
 			} else {
 				Intent intent = new Intent(ref, Popup.class);
+				intent.putExtra("title", "Error");
 				intent.putExtra("text", "The requested path does not exist.");
 				ref.startActivityForResult(intent, 0);
 			}
