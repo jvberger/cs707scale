@@ -1,6 +1,8 @@
 package wisc.madison.cs.cs707scale;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -28,6 +30,7 @@ public class PathChooser extends Activity implements OnItemClickListener {
 	private String currentDirectory;
 	private static final String SETTINGSNAME = "ScaleSettings";
 	private HashMap<String,String> fileName = new HashMap<String,String>();
+	private boolean local;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +46,36 @@ public class PathChooser extends Activity implements OnItemClickListener {
 		if (currentDirectory != "") {
 			new LoadPathsTask().execute(currentDirectory);
 		}
+		else
+		{
+			LoadLocalPath();
+		}
+	}
+	
+	private void LoadLocalPath()
+	{
+		try {
+			local = true;
+			List<String> pathList = new ArrayList<String>();
+			String str;
+			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(new File(ref.getFilesDir(), "Paths.txt"))));
+			
+			while ((str = in.readLine()) != null) {
+				int split = str.lastIndexOf('\t');
+				if (split != -1)
+				{
+					String first = str.substring(0, split);
+					String second = str.substring(split+1);
+					pathList.add(first);
+					fileName.put(first, second);
+				}
+			}
+			ArrayAdapter<String> adapter = new ArrayAdapter<String>(ref,
+					android.R.layout.simple_list_item_1, pathList);
+			paths.setAdapter(adapter);
+			in.close();
+		} catch (Exception e) {
+		}	
 	}
 
 	public void ChangeDirectoryClicked(View view) {
@@ -64,8 +97,14 @@ public class PathChooser extends Activity implements OnItemClickListener {
 				SharedPreferences.Editor editor = settings.edit();
 				editor.putString("pathDirectory", currentDirectory);
 				editor.commit();
-
-				new LoadPathsTask().execute(currentDirectory);
+				if (currentDirectory != "")
+				{
+					new LoadPathsTask().execute(currentDirectory);
+				}
+				else
+				{
+					LoadLocalPath();
+				}
 			}
 		});
 
@@ -106,6 +145,7 @@ public class PathChooser extends Activity implements OnItemClickListener {
 		}
 
 		protected void onPostExecute(List<String> pathList) {
+			local = false;
 			ArrayAdapter<String> adapter = new ArrayAdapter<String>(ref,
 					android.R.layout.simple_list_item_1, pathList);
 			paths.setAdapter(adapter);
@@ -114,14 +154,19 @@ public class PathChooser extends Activity implements OnItemClickListener {
 
 	@Override
 	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-		String path = currentDirectory;
-		if (!path.endsWith("/")) {
-			path += "/";
+		String path = "";
+		if (!local)
+		{
+			path += currentDirectory;
+			if (!path.endsWith("/")) {
+				path += "/";
+			}
 		}
 		path += fileName.get((String) paths.getItemAtPosition(arg2));
 		Intent intent = new Intent(ref, Map.class);
 		intent.putExtra("path", path);
 		intent.putExtra("scaleItem", scaleItem);
+		intent.putExtra("localPath", local);
 		startActivity(intent);
 	}
 }

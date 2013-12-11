@@ -47,6 +47,10 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 		if (currentDirectory != "") {
 			new LoadScalesTask().execute(currentDirectory);
 		}
+		else
+		{
+			ChangeDirectoryClicked(null);
+		}
 	}
 
 	public void ChangeDirectoryClicked(View view) {

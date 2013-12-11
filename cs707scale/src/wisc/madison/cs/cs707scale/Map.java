@@ -3,6 +3,8 @@ package wisc.madison.cs.cs707scale;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -29,8 +31,6 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.CameraUpdate;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -55,6 +55,7 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 	private Map ref;
 	public Intent intent;
 	private String pathUrl, scaleItem;
+	private boolean localPath;
 	private ScaleLocationListener locationLis;
 	private LocationManager locationMan;
 	
@@ -66,6 +67,7 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 		intent = getIntent();
 		pathUrl = intent.getStringExtra("path");
 		scaleItem = intent.getStringExtra("scaleItem");
+		localPath = intent.getBooleanExtra("localPath", false);
 		
 		Fragment f = getSupportFragmentManager().findFragmentById(R.id.map);
 		SupportMapFragment mf = (SupportMapFragment)f;
@@ -142,16 +144,10 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
             	}
             	if (so.name == null || so.text == null || so.percentage == null)
             	{
-            		AlertDialog.Builder alert = new AlertDialog.Builder(this);
-
-            		alert.setTitle("Invalid scale");
-            		alert.setMessage("A scale item is missing a name, text, or percentage tag.");
-            		alert.setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
-            			public void onClick(DialogInterface dialog, int whichButton) {
-            				finish();
-            			}
-            		});
-            		alert.show();
+					Intent intent = new Intent(ref, Popup.class);
+					intent.putExtra("title", "Invalid scale");
+					intent.putExtra("text", "A scale item is missing a name, text, or percentage tag.");
+					ref.startActivityForResult(intent, 0);
             	}
             	else
             	{
@@ -305,8 +301,15 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 		@Override
 		protected String doInBackground(String... arg0) {
 			try {
-				BufferedReader in = new BufferedReader(new InputStreamReader(
-						new URL(arg0[0]).openStream()));
+				BufferedReader in;
+				if (localPath)
+				{
+					in = new BufferedReader(new InputStreamReader(new FileInputStream(new File(ref.getFilesDir(), arg0[0]))));
+				}
+				else {
+					in = new BufferedReader(new InputStreamReader(
+							new URL(arg0[0]).openStream()));
+				}
 				String str;
 				String fullFile = "";
 				while ((str = in.readLine()) != null) {

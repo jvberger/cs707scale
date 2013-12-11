@@ -22,11 +22,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-                <activity
+        <activity
             android:name="wisc.madison.cs.cs707scale.Map"
             android:label="@string/app_name" >
         </activity>
-                        <activity
+        <activity
             android:name="wisc.madison.cs.cs707scale.Popup"
             android:theme="@android:style/Theme.Dialog">
         </activity>
@@ -35,6 +35,9 @@
             android:label="@string/app_name" />
         <activity
             android:name="wisc.madison.cs.cs707scale.PathChooser"
+            android:label="@string/app_name" />
+        <activity
+            android:name="wisc.madison.cs.cs707scale.RecordPath"
             android:label="@string/app_name" />
         <activity android:name="com.google.android.gms.maps.SupportMapFragment"/>
             <meta-data

@@ -34,5 +34,9 @@ public class Scale extends Activity {
 		startActivity(intent);
 	}
 	
+	public void Button3Clicked(View view) {
+		Intent intent = new Intent(this, RecordPath.class);
+		startActivity(intent);
+	}
 
 }
