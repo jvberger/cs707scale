@@ -9,7 +9,6 @@ import android.location.LocationListener;
 import android.os.Bundle; 
 
 public class ScaleLocationListener extends Activity implements LocationListener {
-	private LatLng previousPoint;
 	private Map mapActivity;
 	
 	public ScaleLocationListener(Activity activity) {
@@ -31,7 +30,7 @@ public class ScaleLocationListener extends Activity implements LocationListener 
 		}
 		else
 		{
-			mapActivity.distanceTraveled += MapUtils.getDistance(loc.getLatitude(), loc.getLongitude(), previousPoint.latitude, previousPoint.longitude);
+			mapActivity.distanceTraveled += MapUtils.getDistance(loc.getLatitude(), loc.getLongitude(), mapActivity.previousPoint.latitude, mapActivity.previousPoint.longitude);
 			for (ScaleObject so : mapActivity.scaleItemList)
 			{
 				if (!so.opened && Math.abs(mapActivity.distanceTraveled - so.distance) < mapActivity.distanceInterval && MapUtils.getDistance(so.position.latitude, so.position.longitude, loc.getLatitude(), loc.getLongitude()) < 30) {
@@ -44,7 +43,7 @@ public class ScaleLocationListener extends Activity implements LocationListener 
 				}
 			}
 		}
-		previousPoint = new LatLng(loc.getLatitude(), loc.getLongitude());
+		mapActivity.previousPoint = new LatLng(loc.getLatitude(), loc.getLongitude());
 	}
 	
 	@Override

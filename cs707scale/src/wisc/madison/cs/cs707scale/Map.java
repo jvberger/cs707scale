@@ -49,6 +49,7 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 	public List<ScaleObject> scaleItemList = new ArrayList<ScaleObject>();
 	private GoogleMap map;
 	public LatLng startingPoint;
+	public LatLng previousPoint;
 	public boolean pathStarted = false;
 	public double distanceTraveled = 0;
 	public double distanceInterval;
@@ -277,15 +278,15 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 	
 	@Override
 	protected void onPause(){
-		locationMan.removeUpdates(locationLis);
-		locationLis = null;
+		//locationMan.removeUpdates(locationLis);
+		//locationLis = null;
 	    super.onPause();
 	} 
 	
 	@Override
 	protected void onResume() {
-		locationLis = new ScaleLocationListener(this);
-		locationMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 2, locationLis);
+		//locationLis = new ScaleLocationListener(this);
+		//locationMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 2, locationLis);
 	    super.onResume();
 	}
 	
