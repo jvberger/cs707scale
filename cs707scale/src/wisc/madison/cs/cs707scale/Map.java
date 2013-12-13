@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -14,6 +15,7 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.validator.routines.UrlValidator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -301,20 +303,31 @@ public class Map extends FragmentActivity implements OnMarkerClickListener {
 		@Override
 		protected String doInBackground(String... arg0) {
 			try {
-				BufferedReader in;
+				BufferedReader in = null;
 				if (localPath)
 				{
 					in = new BufferedReader(new InputStreamReader(new FileInputStream(new File(ref.getFilesDir(), arg0[0]))));
 				}
 				else {
-					in = new BufferedReader(new InputStreamReader(
-							new URL(arg0[0]).openStream()));
+					UrlValidator validator = new UrlValidator();
+					if(validator.isValid(arg0[0])) {
+						in = new BufferedReader(new InputStreamReader(
+								new URL(arg0[0]).openStream()));;
+					} else if(new File(arg0[0]).exists()) {
+						in = new BufferedReader(new FileReader(arg0[0]));
+					} else {
+						Intent intent = new Intent(ref, Popup.class);
+						intent.putExtra("title", "Error");
+						intent.putExtra("text", "Invalid Directory Location");
+						startActivity(intent);
+					}
 				}
 				String str;
 				String fullFile = "";
 				while ((str = in.readLine()) != null) {
 					fullFile += str + "\n";
 				}
+				in.close();
 				return fullFile;
 			} catch (Exception e) {
 			}
