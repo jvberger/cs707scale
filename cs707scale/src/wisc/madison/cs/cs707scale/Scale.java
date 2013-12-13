@@ -30,7 +30,7 @@ public class Scale extends Activity {
 	}
 	
 	public void Button2Clicked(View view) {
-		Intent intent = new Intent(this, ScaleChooser.class);
+		Intent intent = new Intent(this, DirChooser.class);
 		startActivity(intent);
 	}
 	

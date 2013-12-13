@@ -118,6 +118,8 @@ public class PathChooser extends Activity implements OnItemClickListener {
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
 				currentDirectory = input.getText().toString();
+				String location = getExternalFilesDir(null).getAbsolutePath() + "/dirs.txt";
+				DirUtils.storeDir(location, currentDirectory);
 				SharedPreferences settings = getSharedPreferences(SETTINGSNAME,
 						0);
 				SharedPreferences.Editor editor = settings.edit();

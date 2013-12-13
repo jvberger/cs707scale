@@ -72,7 +72,9 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 				SharedPreferences.Editor editor = settings.edit();
 				editor.putString("scaleDirectory", currentDirectory);
 				editor.commit();
-
+				String location = getExternalFilesDir(null).getAbsolutePath() + "/dirs.txt";
+				DirUtils.storeDir(location, currentDirectory);
+				
 				new LoadScalesTask().execute(currentDirectory);
 			}
 		});

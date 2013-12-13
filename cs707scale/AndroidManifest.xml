@@ -39,6 +39,9 @@
         <activity
             android:name="wisc.madison.cs.cs707scale.RecordPath"
             android:label="@string/app_name" />
+        <activity
+            android:name="wisc.madison.cs.cs707scale.DirChooser"
+            android:label="@string/app_name" />
         <activity android:name="com.google.android.gms.maps.SupportMapFragment"/>
             <meta-data
             android:name="com.google.android.gms.version"
