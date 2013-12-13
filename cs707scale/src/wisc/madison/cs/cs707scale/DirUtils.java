@@ -1,6 +1,8 @@
 package wisc.madison.cs.cs707scale;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 
 public class DirUtils {
@@ -8,10 +10,15 @@ public class DirUtils {
 		if(!toStore.endsWith("/")) {
 			toStore += "/";
 		} 
-		
-		
-		
+
 		try {
+			BufferedReader br = new BufferedReader(new FileReader(location));
+			String line;
+			while( (line = br.readLine()) != null) {
+				if(line.trim() == toStore.trim()) {
+					return;
+				}
+			}	
 			File f = new File(location);
 			if(!f.exists()) {
 				f.createNewFile();
@@ -22,6 +29,7 @@ public class DirUtils {
 			FileWriter out = new FileWriter(f, true);
 			out.write(toStore);
 			out.close();
+			br.close();
 		} catch (Exception e) {
 			
 		}
