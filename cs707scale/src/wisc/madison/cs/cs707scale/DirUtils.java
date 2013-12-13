@@ -15,7 +15,7 @@ public class DirUtils {
 			BufferedReader br = new BufferedReader(new FileReader(location));
 			String line;
 			while( (line = br.readLine()) != null) {
-				if(line.trim() == toStore.trim()) {
+				if(line.trim().equals(toStore.trim())) {
 					return;
 				}
 			}	
