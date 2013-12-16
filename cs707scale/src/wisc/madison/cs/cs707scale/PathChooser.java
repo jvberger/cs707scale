@@ -3,11 +3,14 @@ package wisc.madison.cs.cs707scale;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import org.apache.commons.validator.routines.UrlValidator;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -44,13 +47,18 @@ public class PathChooser extends Activity implements OnItemClickListener {
 		changeDirectory = (Button)findViewById(R.id.changeDirectory_btn);
 		changeDirectory.setVisibility(View.GONE);
 		localButton.setVisibility(View.VISIBLE);
-		local = true;
+		local = false;
 		ref = this;
 		Intent intent = getIntent();
 		scaleItem = intent.getStringExtra("scaleItem");
 		paths = (ListView) findViewById(R.id.listView1);
 		paths.setOnItemClickListener(this);
-		LoadLocalPath();
+		//LoadLocalPath();
+		SharedPreferences settings = getSharedPreferences(SETTINGSNAME, 0);
+		currentDirectory = settings.getString("pathDirectory", "");
+		if (currentDirectory != "") {
+			new LoadPathsTask().execute(currentDirectory);
+		}
 	}
 	
 	public void ChangeLocalClicked(View view)
@@ -85,6 +93,7 @@ public class PathChooser extends Activity implements OnItemClickListener {
 			List<String> pathList = new ArrayList<String>();
 			String str;
 			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(new File(ref.getFilesDir(), "Paths.txt"))));
+			
 			
 			while ((str = in.readLine()) != null) {
 				int split = str.lastIndexOf('\t');
@@ -153,8 +162,20 @@ public class PathChooser extends Activity implements OnItemClickListener {
 					path += "/";
 				}
 				path += "Paths.txt";
-				BufferedReader in = new BufferedReader(new InputStreamReader(
-						new URL(path).openStream()));
+				BufferedReader in = null;
+				UrlValidator validator = new UrlValidator();
+				if(validator.isValid(path)) {
+					in = new BufferedReader(new InputStreamReader(
+							new URL(path).openStream()));;
+				} else if(new File(path).exists()) {
+					in = new BufferedReader(new FileReader(path));
+				} else {
+					Intent intent = new Intent(ref, Popup.class);
+					intent.putExtra("title", "Error");
+					intent.putExtra("text", "Invalid Directory Location");
+					startActivity(intent);
+				}
+
 				String str;
 				while ((str = in.readLine()) != null) {
 					int split = str.lastIndexOf('\t');

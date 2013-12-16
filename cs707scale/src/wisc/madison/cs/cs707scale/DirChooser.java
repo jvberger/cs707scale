@@ -19,6 +19,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
+import wisc.madison.cs.cs707scale.PathChooser.LoadPathsTask;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -37,7 +39,7 @@ import android.content.Context;
 
 public class DirChooser extends Activity implements OnItemClickListener {
 	private ListView dirs;
-	private ScaleChooser ref;
+	private DirChooser ref;
 	private String currentDirectory;
 	private Integer currentPosition;
 	private List<String> menu;
@@ -47,6 +49,7 @@ public class DirChooser extends Activity implements OnItemClickListener {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.chooser);
+		ref = this;
 		dirs = (ListView) findViewById(R.id.listView1);
 		dirs.setOnItemClickListener(this);
 		SharedPreferences settings = getSharedPreferences(SETTINGSNAME, 0);
@@ -81,12 +84,43 @@ public class DirChooser extends Activity implements OnItemClickListener {
 				ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, menu);
 				dirs.setAdapter(adapter);
 			} else {
-				Intent intent = new Intent(this, ScaleChooser.class);
+				Intent intent = new Intent(ref, ScaleChooser.class);
 				startActivity(intent);
 			}
 
 		} catch(Exception e) {}
 			
+	}
+	
+	public void ChangeDirectoryClicked(View view) {
+		AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+		alert.setTitle("Change Directory");
+		alert.setMessage("Input the location to search for path files.");
+
+		// Set an EditText view to get user input
+		final EditText input = new EditText(this);
+		input.setText(currentDirectory);
+		alert.setView(input);
+
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int whichButton) {
+				currentDirectory = input.getText().toString();
+				String location = getExternalFilesDir(null).getAbsolutePath() + "/dirs.txt";
+				DirUtils.storeDir(location, currentDirectory);
+				SharedPreferences settings = getSharedPreferences(SETTINGSNAME,
+						0);
+				SharedPreferences.Editor editor = settings.edit();
+				editor.putString("pathDirectory", currentDirectory);
+				editor.commit();
+				Intent intent = new Intent(ref, ScaleChooser.class);
+				startActivity(intent);
+			}
+		});
+
+		alert.setNegativeButton("Cancel", null);
+
+		alert.show();
 	}
 	
 	@Override
@@ -95,7 +129,7 @@ public class DirChooser extends Activity implements OnItemClickListener {
 		SharedPreferences.Editor editor = settings.edit();
 		editor.putString("scaleDirectory", menu.get(position));
 		editor.commit();
-		Intent intent = new Intent(this, ScaleChooser.class);
+		Intent intent = new Intent(ref, ScaleChooser.class);
 		startActivity(intent);
 	}
 	

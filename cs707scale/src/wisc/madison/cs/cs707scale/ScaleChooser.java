@@ -3,6 +3,8 @@ package wisc.madison.cs.cs707scale;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
+import java.io.FileReader;
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,6 +15,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+import org.apache.commons.validator.routines.UrlValidator;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -96,8 +99,15 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 					path += "/";
 				}
 				path += "Scales.txt";
-				BufferedReader in = new BufferedReader(new InputStreamReader(
-						new URL(path).openStream()));
+				BufferedReader in;
+				UrlValidator validator = new UrlValidator();
+				if(validator.isValid(path)) {
+					in = new BufferedReader(new InputStreamReader(
+							new URL(path).openStream()));
+				} else {
+					in = new BufferedReader(new FileReader(path));
+				}
+	
 				String str;
 				while ((str = in.readLine()) != null) {
 					int split = str.lastIndexOf('\t');
@@ -138,13 +148,26 @@ public class ScaleChooser extends Activity implements OnItemClickListener {
 		@Override
 		protected String doInBackground(String... arg0) {
 			try {
-				BufferedReader in = new BufferedReader(new InputStreamReader(
-						new URL(arg0[0]).openStream()));
+				BufferedReader in = null;
+				UrlValidator validator = new UrlValidator();
+				if(validator.isValid(arg0[0])) {
+					in = new BufferedReader(new InputStreamReader(
+							new URL(arg0[0]).openStream()));
+				} else if(new File(arg0[0]).exists()) {
+					in = new BufferedReader(new FileReader(arg0[0]));
+				} else {
+					Intent intent = new Intent(ref, Popup.class);
+					intent.putExtra("title", "Error");
+					intent.putExtra("text", "Invalid Directory Location");
+					startActivity(intent);
+				}
+				
 				String str;
 				String fullFile = "";
 				while ((str = in.readLine()) != null) {
 					fullFile += str + "\n";
 				}
+				in.close();
 				return fullFile;
 			} catch (Exception e) {
 			}

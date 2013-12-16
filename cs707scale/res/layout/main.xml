@@ -1,42 +1,29 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:padding="0dp" >
+    android:orientation="horizontal"
+    android:gravity="center">
 
     <Button
         android:id="@+id/button1"
-        android:layout_width="match_parent"
+        android:text="Walk Path"
+        android:onClick="Button2Clicked"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-	    android:padding="0dp"
-	    android:layout_marginLeft="-5dip"
-	    android:layout_marginRight="-5dip"
-	    android:layout_marginTop="-5dip"
-	    android:layout_marginBottom="-5dip"
-        android:onClick="Button1Clicked"
-        android:text="Popup" />
+        android:layout_marginBottom="5sp"
+        android:layout_marginLeft="5sp"
+        android:layout_marginRight="2sp"
+        android:layout_marginTop="0sp" />
 
     <Button
         android:id="@+id/button2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-	    android:padding="0dp"
-	    android:layout_marginLeft="-5dip"
-	    android:layout_marginRight="-5dip"
-	    android:layout_marginTop="-5dip"
-	    android:layout_marginBottom="-5dip"
-        android:onClick="Button2Clicked"
-        android:text="Map" />
-    <Button
-        android:id="@+id/button3"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-	    android:padding="0dp"
-	    android:layout_marginLeft="-5dip"
-	    android:layout_marginRight="-5dip"
-	    android:layout_marginTop="-5dip"
-	    android:layout_marginBottom="-5dip"
+        android:text="Record Path"
         android:onClick="Button3Clicked"
-        android:text="Record Path" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5sp"
+        android:layout_marginLeft="2sp"
+        android:layout_marginRight="5sp"
+        android:layout_marginTop="0sp"/>
+
 </LinearLayout>

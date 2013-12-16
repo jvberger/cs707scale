@@ -152,6 +152,7 @@ public class RecordPath extends FragmentActivity {
 										newPath.close();
 										ref.finish();
 										alert.dismiss();
+										DirUtils.storeDir(getExternalFilesDir(null).getAbsolutePath() + "/dirs.txt", ref.getFilesDir().getAbsolutePath());
 									}
 									catch (Exception e) {
 										
